@@ -1,0 +1,3 @@
+[submodule "StockrApp/stockrSWIFT"]
+	path = StockrApp/stockrSWIFT
+	url = https://github.com/elisamroland2-hub/STOCKRHUB.git

@@ -1,0 +1,32 @@
+from functools import wraps
+from flask import request, jsonify
+from models import User
+from datetime import datetime
+
+def token_required(f):
+    """Décorateur pour vérifier le token d'authentification"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        
+        # Récupère le token du header
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+        
+        if not token:
+            return jsonify({'error': 'Token manquant'}), 401
+        
+        # Vérifie le token
+        user = User.query.filter_by(auth_token=token).first()
+        
+        if not user:
+            return jsonify({'error': 'Token invalide'}), 401
+        
+        if user.token_expiry and user.token_expiry < datetime.utcnow():
+            return jsonify({'error': 'Token expiré'}), 401
+        
+        # Passe l'utilisateur à la route
+        return f(user, *args, **kwargs)
+    
+    return decorated
