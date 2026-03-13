@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ajouter un client</title>
+    <style>
+        body { font-family: Arial; margin: 40px; max-width: 600px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="email"] { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+        }
+        button { 
+            background-color: #4CAF50; 
+            color: white; 
+            padding: 10px 15px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        button:hover { background-color: #45a049; }
+        .errorlist { color: red; list-style: none; padding: 0; }
+        .messages { 
+            padding: 10px; 
+            background-color: #d4edda; 
+            border: 1px solid #c3e6cb; 
+            color: #155724; 
+            border-radius: 4px; 
+            margin-bottom: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Ajouter un nouveau client</h1>
+    
+    <!-- Affichage des messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="messages">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    
+    <!-- Formulaire -->
+    <form method="post">
+        {% csrf_token %}  <!-- Protection contre les attaques -->
+        
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}  <!-- Affiche le label -->
+            {{ field }}            <!-- Afficle le champ -->
+            {% if field.errors %}
+                <ul class="errorlist">
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <button type="submit">Ajouter ce client</button>
+        <a href="{% url 'liste' %}" style="margin-left: 10px;">Retour à la liste</a>
+    </form>
+</body>
+</html>
