@@ -9,7 +9,6 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False, default=0)
     photo_url = db.Column(db.String(500), nullable=True)
     
-    # 🔐 LIAISON AVEC L'UTILISATEUR
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('products', lazy=True, cascade="all, delete-orphan"))
     
@@ -39,8 +38,11 @@ class Product(db.Model):
                 product_id=self.id, article_id=article.id).first()
             qty_used = query.quantity_used if query else 1.0
             
+            # 🔴 SÉCURITÉ : Éviter la division par zéro et les crashs
             if qty_used > 0:
-                possible = article.quantity // qty_used
+                # On s'assure de ne pas avoir de valeurs négatives
+                available_qty = max(0, article.quantity)
+                possible = available_qty // qty_used
                 max_possible = min(max_possible, possible)
         
         return int(max_possible) if max_possible != float('inf') else 0
@@ -53,5 +55,5 @@ class Product(db.Model):
             'photo_url': self.photo_url,
             'composition': self.get_composition_details(),
             'producible_quantity': self.producible_quantity(),
-            'user_id': self.user_id  # Ajouté pour debug
+            'user_id': self.user_id
         }
