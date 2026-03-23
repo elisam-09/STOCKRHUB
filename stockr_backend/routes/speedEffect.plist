@@ -1,0 +1,55 @@
+from flask import Blueprint, request, jsonify
+import os
+import uuid
+# from ultralytics import YOLO  # À décommenter quand tu téléchargeras le modèle IA
+
+spectra_bp = Blueprint('spectra', __name__)
+
+# Modèle YOLOv8 (à charger plus tard en local)
+# model = YOLO('yolov8n.pt') 
+
+@spectra_bp.route('/scan', methods=['POST'])
+def scan_inventory():
+    """Route Spectra : Reçoit l'image, compte les articles, met à jour le stock"""
+    
+    if 'image' not in request.files:
+        return jsonify({"error": "Aucune image envoyée par la caméra."}), 400
+        
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({"error": "Fichier image vide."}), 400
+
+    try:
+        # 1. Sauvegarde temporaire de l'image (nom unique)
+        filename = str(uuid.uuid4()) + ".jpg"
+        filepath = os.path.join("/tmp", filename)
+        file.save(filepath)
+        
+        # 🔴 2. ANALYSE IA (SPECTRA VISION)
+        # resultats = model(filepath)
+        # objets_detectes = resultats[0].boxes.cls.tolist()
+        
+        # Simulation de l'IA (MOCK) en attendant le vrai modèle
+        objets_detectes = [
+            {"article_id": 1, "nom": "Tissu Wax", "quantite_comptee": 15},
+            {"article_id": 2, "nom": "Maxi rouge", "quantite_comptee": 8}
+        ]
+        
+        # 3. Logique de mise à jour (Ici, on communiquerait avec models.py pour update la DB)
+        # for obj in objets_detectes:
+        #     article = Article.query.get(obj['article_id'])
+        #     article.quantity = obj['quantite_comptee']
+        # db.session.commit()
+        
+        # 4. Nettoyage : On supprime l'image du serveur
+        if os.path.exists(filepath):
+            os.path.remove(filepath)
+            
+        return jsonify({
+            "status": "success",
+            "message": "Inventaire Spectra terminé.",
+            "data": objets_detectes
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
